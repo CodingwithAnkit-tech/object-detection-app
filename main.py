@@ -73,11 +73,22 @@ if tabs == "📷 Live Camera":
 
             return annotated
 
-    webrtc_streamer(
-        key=f"cam-{cam_choice}",
-        video_transformer_factory=LiveTransformer,
-        media_stream_constraints=constraints,
-    )
+   webrtc_streamer(
+    key=f"cam-{cam_choice}",
+    mode=WebRtcMode.SENDRECV,
+    rtc_configuration={
+        "iceServers": [
+            {"urls": "stun:stun.l.google.com:19302"},  # Google STUN
+            {
+                "urls": "turn:openrelay.metered.ca:443",  # TURN server
+                "username": "openrelayproject",
+                "credential": "openrelayproject"
+            }
+        ]
+    },
+    video_transformer_factory=LiveTransformer,
+    media_stream_constraints=constraints,
+)
 
 
 # ------------------------------
