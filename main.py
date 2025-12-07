@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import time
 from ultralytics import YOLO
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, WebRtcMode
 import av
 
 # ------------------------------
@@ -68,30 +68,35 @@ if tabs == "📷 Live Camera":
 
             if show_fps:
                 fps = int(1 / (time.time() - start))
-                cv2.putText(annotated, f"FPS: {fps}", (10, 30),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                cv2.putText(
+                    annotated,
+                    f"FPS: {fps}",
+                    (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (0, 255, 255),
+                    2
+                )
 
             return annotated
 
-            webrtc_streamer(
-            key=f"cam-{cam_choice}",
-            mode=WebRtcMode.SENDRECV,
-            rtc_configuration={
-                "iceServers": [
-                    {"urls": "stun:stun.l.google.com:19302"},
-                    {
-                        "urls": "turn:openrelay.metered.ca:443",
-                        "username": "openrelayproject",
-                        "credential": "openrelayproject"
-                    }
-                ]
-            },
-            video_transformer_factory=LiveTransformer,
-            media_stream_constraints=constraints,
-        )
-
-    
-
+    # ✅ WebRTC MUST BE OUTSIDE THE CLASS + NO RETURN ABOVE IT
+    webrtc_streamer(
+        key=f"cam-{cam_choice}",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration={
+            "iceServers": [
+                {"urls": "stun:stun.l.google.com:19302"},
+                {
+                    "urls": "turn:openrelay.metered.ca:443",
+                    "username": "openrelayproject",
+                    "credential": "openrelayproject"
+                }
+            ]
+        },
+        video_transformer_factory=LiveTransformer,
+        media_stream_constraints=constraints,
+    )
 
 
 # ------------------------------
