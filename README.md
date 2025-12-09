@@ -47,7 +47,7 @@ This application allows users to perform object detection on live webcam, images
 
 # ✔ This README matches the exact structure shown in your screenshot.
 
-🚀 Features
+# 🚀 Features
 ✅ Real-time Object Detection (Live Webcam using WebRTC)
 ✅ YOLOv8 + SSD MobileNet Support
 ✅ Image Upload Detection
