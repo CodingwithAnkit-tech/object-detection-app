@@ -67,7 +67,6 @@ This application allows users to perform object detection on live webcam, images
 - YOLOv8 (ultralytics)	High accuracy object detection
 - SSD MobileNet V3	Lightweight, fast detection
 - Streamlit	Front-end UI
-
   
 # 📥 Installation
 1️⃣ Clone the repo
