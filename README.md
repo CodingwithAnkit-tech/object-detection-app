@@ -18,6 +18,7 @@ This application allows users to perform object detection on live webcam, images
 
 # Custom settings like:
 
+
 - Confidence threshold slider
 - Show/Hide FPS
 - Camera selection
