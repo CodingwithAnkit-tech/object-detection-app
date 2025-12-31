@@ -80,7 +80,7 @@ pip install -r requirements.txt
 3️⃣ Run the app
 streamlit run main.py
 
-🧪 How It Works
+# 🧪 How It Works
 🔄 YOLOv8 Mode
 
 The YOLO model is loaded via ultralytics.
