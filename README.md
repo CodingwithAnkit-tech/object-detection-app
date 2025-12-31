@@ -119,4 +119,4 @@ This app includes:
 ✔ runtime.txt
 ✔ packages.txt
 
-So 
+So  the
