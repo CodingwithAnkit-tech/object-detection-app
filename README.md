@@ -84,8 +84,7 @@ streamlit run main.py
 🔄 YOLOv8 Mode
 
 - The YOLO model is loaded via ultralytics.
-
-Each frame is converted to tensor → inference → boxes + labels → drawn.
+- Each frame is converted to tensor → inference → boxes + labels → drawn.
 
 # ⚡ SSD MobileNet Mode
 
