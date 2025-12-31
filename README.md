@@ -83,7 +83,7 @@ streamlit run main.py
 # 🧪 How It Works
 🔄 YOLOv8 Mode
 
-The YOLO model is loaded via ultralytics.
+- The YOLO model is loaded via ultralytics.
 
 Each frame is converted to tensor → inference → boxes + labels → drawn.
 
