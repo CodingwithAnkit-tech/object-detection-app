@@ -46,7 +46,6 @@ This application allows users to perform object detection on live webcam, images
 
 
 
-
 # ✔ This README matches the exact structure shown in your screenshot.
 
 # 🚀 Features
