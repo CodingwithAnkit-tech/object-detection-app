@@ -4,3 +4,4 @@ opencv-python-headless==4.7.0.72
 torch==1.13.1
 torchvision==0.14.1
 ultralytics==8.0.20
+pyyaml==6.0.1
