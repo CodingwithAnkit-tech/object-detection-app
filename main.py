@@ -27,7 +27,12 @@ tabs = st.sidebar.radio("Choose Mode", ["📷 Live Camera", "🖼 Image Detectio
 # ------------------------------
 # Load YOLOv8 model
 # ------------------------------
-model = YOLO("yolov8n.pt")  # smallest fastest model
+#model = YOLO("yolov8n.pt")  # smallest fastest model
+@st.cache_resource
+def load_model():
+    return YOLO("yolov8n.pt")
+
+model = load_model()
 
 
 # ------------------------------
