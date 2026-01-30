@@ -3,8 +3,8 @@ import cv2
 import numpy as np
 import time
 from ultralytics import YOLO
-from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, WebRtcMode
-import av
+import io
+from PIL import Image
 
 # ------------------------------
 # App UI Theme
@@ -21,140 +21,122 @@ st.markdown("""
     </h1>
 """, unsafe_allow_html=True)
 
-tabs = st.sidebar.radio("Choose Mode", ["📷 Live Camera", "🖼 Image Detection", "🎞 Video Detection"])
-
+# ------------------------------
+# Sidebar Tabs (NO Webcam)
+# ------------------------------
+tabs = st.sidebar.radio(
+    "Choose Mode",
+    ["🖼 Image Detection", "🎞 Video Detection"]
+)
 
 # ------------------------------
-# Load YOLOv8 model
+# Load YOLOv8 model (CACHED)
 # ------------------------------
-#model = YOLO("yolov8n.pt")  # smallest fastest model
 @st.cache_resource
 def load_model():
     return YOLO("yolov8n.pt")
 
 model = load_model()
 
-
 # ------------------------------
-# COMMON SETTINGS
+# Common Settings
 # ------------------------------
 conf_threshold = st.sidebar.slider("Confidence Threshold", 0.1, 1.0, 0.5)
-show_labels = st.sidebar.checkbox("Show Labels", True)
-show_conf = st.sidebar.checkbox("Show Confidence %", True)
 show_fps = st.sidebar.checkbox("Show FPS", True)
 
+# ------------------------------
+# IMAGE UPLOAD DETECTION
+# ------------------------------
+if tabs == "🖼 Image Detection":
+
+    st.markdown("## 🖼 Upload Image for Detection")
+    uploaded = st.file_uploader(
+        "Upload Image",
+        type=["jpg", "jpeg", "png"]
+    )
+
+    if uploaded is not None:
+        image_bytes = np.frombuffer(uploaded.read(), np.uint8)
+        img = cv2.imdecode(image_bytes, cv2.IMREAD_COLOR)
+
+        start = time.time()
+        results = model(img, conf=conf_threshold)
+        annotated = results[0].plot()
+
+        if show_fps:
+            fps = int(1 / (time.time() - start + 1e-6))
+            cv2.putText(
+                annotated,
+                f"FPS: {fps}",
+                (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (0, 255, 0),
+                2
+            )
+
+        st.image(annotated, channels="BGR", use_column_width=True)
+
+        # Safe download (no disk write)
+        rgb = cv2.cvtColor(annotated, cv2.COLOR_BGR2RGB)
+        pil_img = Image.fromarray(rgb)
+        buf = io.BytesIO()
+        pil_img.save(buf, format="JPEG")
+
+        st.download_button(
+            label="⬇️ Download Result",
+            data=buf.getvalue(),
+            file_name="detected_image.jpg",
+            mime="image/jpeg"
+        )
 
 # ------------------------------
-# LIVE CAMERA DETECTION
+# VIDEO UPLOAD DETECTION
 # ------------------------------
+elif tabs == "🎞 Video Detection":
 
-if tabs == "📷 Live Camera":
+    st.markdown("## 🎞 Upload Video for Detection")
+    video_file = st.file_uploader(
+        "Upload MP4 / AVI / MOV",
+        type=["mp4", "avi", "mov"]
+    )
 
-    st.markdown("## 📡 Live Camera Object Detection")
-    cam_choice = st.sidebar.radio("Camera:", ["Default", "Front", "Back"])
+    if video_file is not None:
+        temp_path = "uploaded_video.mp4"
+        with open(temp_path, "wb") as f:
+            f.write(video_file.read())
 
-    def get_constraints(choice):
-        if choice == "Front":
-            return {"video": {"facingMode": "user"}, "audio": False}
-        if choice == "Back":
-            return {"video": {"facingMode": "environment"}, "audio": False}
-        return {"video": True, "audio": False}
+        cap = cv2.VideoCapture(temp_path)
+        stframe = st.empty()
 
-    constraints = get_constraints(cam_choice)
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-    class LiveTransformer(VideoTransformerBase):
-
-        def transform(self, frame):
-            img = frame.to_ndarray(format="bgr24")
             start = time.time()
-
-            results = model(img, conf=conf_threshold)
+            results = model(frame, conf=conf_threshold)
             annotated = results[0].plot()
 
             if show_fps:
-                fps = int(1 / (time.time() - start))
+                fps = int(1 / (time.time() - start + 1e-6))
                 cv2.putText(
                     annotated,
                     f"FPS: {fps}",
                     (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,
-                    (0, 255, 255),
+                    (255, 255, 0),
                     2
                 )
-
-            return annotated
-
-    # ✅ WebRTC MUST BE OUTSIDE THE CLASS + NO RETURN ABOVE IT
-    webrtc_streamer(
-        key=f"cam-{cam_choice}",
-        mode=WebRtcMode.SENDRECV,
-        rtc_configuration={
-            "iceServers": [
-                {"urls": "stun:stun.l.google.com:19302"},
-                {
-                    "urls": "turn:openrelay.metered.ca:443",
-                    "username": "openrelayproject",
-                    "credential": "openrelayproject"
-                }
-            ]
-        },
-        video_transformer_factory=LiveTransformer,
-        media_stream_constraints=constraints,
-    )
-
-
-# ------------------------------
-# IMAGE UPLOAD DETECTION
-# ------------------------------
-
-elif tabs == "🖼 Image Detection":
-
-    st.markdown("## 🖼 Upload Image for Detection")
-    uploaded = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
-
-    if uploaded:
-        img = cv2.imdecode(np.frombuffer(uploaded.read(), np.uint8), 1)
-
-        results = model(img, conf=conf_threshold)
-        annotated = results[0].plot()
-
-        st.image(annotated, channels="BGR", use_column_width=True)
-
-        cv2.imwrite("output_image.jpg", annotated)
-        with open("output_image.jpg", "rb") as f:
-            st.download_button("Download Result", f, file_name="detected.jpg")
-
-
-# ------------------------------
-# VIDEO UPLOAD DETECTION
-# ------------------------------
-
-elif tabs == "🎞 Video Detection":
-
-    st.markdown("## 🎞 Upload Video for Detection")
-    video = st.file_uploader("Upload MP4/AVI", type=["mp4", "avi", "mov"])
-
-    if video:
-        temp_path = "uploaded_video.mp4"
-        with open(temp_path, "wb") as f:
-            f.write(video.read())
-
-        cap = cv2.VideoCapture(temp_path)
-        stframe = st.empty()
-
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            results = model(frame, conf=conf_threshold)
-            annotated = results[0].plot()
 
             stframe.image(annotated, channels="BGR")
 
         cap.release()
         st.success("🎉 Video Processing Complete!")
 
+# ------------------------------
+# Footer
+# ------------------------------
 st.markdown("---")
-st.caption("Made by ankit ❤️ — Streamlit + OpenCV")
+st.caption("Made by Ankit ❤️ — Streamlit + YOLOv8")
