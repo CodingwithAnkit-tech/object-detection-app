@@ -2,5 +2,7 @@ streamlit
 opencv-python-headless
 ultralytics
 numpy
-av
+av==10.0.0
 streamlit-webrtc
+torch
+torchvision
