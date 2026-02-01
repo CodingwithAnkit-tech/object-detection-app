@@ -5,7 +5,7 @@ This application allows users to perform object detection on live webcam, images
 
 # 🔗 Live App Link
 
-    https://object-detection-app-u8cxuvmxtqwzrt5tyvobxk.streamlit.app/
+https://object-detection-app-u8cxuvmxtqwzrt5tyvobxk.streamlit.app/
 
 # 📝 Project Description
 
