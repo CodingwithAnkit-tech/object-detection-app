@@ -120,4 +120,3 @@ This app includes:
 ✔ packages.txt
 
 So  the deployment is easy
-
