@@ -8,6 +8,7 @@ This application allows users to perform object detection on live webcam, images
 https://object-detection-app-u8cxuvmxtqwzrt5tyvobxk.streamlit.app/
 
 
+
 # 📝 Project Description
 
 - This project demonstrates how to build a production-ready real-time object detection web app using:
